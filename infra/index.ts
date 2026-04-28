@@ -4,7 +4,6 @@ import * as path from "path";
 // Load .env from standalone repo root (one level up from infra/)
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
-import * as pulumi from "@pulumi/pulumi";
 import * as cloudflare from "@pulumi/cloudflare";
 
 const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;

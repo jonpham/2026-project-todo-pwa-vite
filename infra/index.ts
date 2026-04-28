@@ -17,21 +17,15 @@ const config = new pulumi.Config();
 //   pulumi config set cloudflareZoneId <zone-id-for-witty-m.com> --secret
 const accountId = config.requireSecret("cloudflareAccountId");
 
-// Cloudflare Pages project
-const pagesProject = new cloudflare.PagesProject("todo-pwa", {
+// Cloudflare Pages project (standalone repo version)
+const pagesProject = new cloudflare.PagesProject("todo-pwa-vite", {
   accountId: accountId,
-  name: "todo-pwa",
+  name: "todo-pwa-vite",
   productionBranch: "main",
 });
 
-// Custom domain binding — requires witty-m.com zone to be active in Cloudflare
-// and nameservers delegated from NameCheap (see docs/deployment-setup-guide.md).
-const pagesDomain = new cloudflare.PagesDomain("todo-pwa-domain", {
-  accountId: accountId,
-  projectName: pagesProject.name,
-  domain: "app.todo.witty-m.com",
-});
-
 export const projectName = pagesProject.name;
-export const productionUrl = pagesDomain.domain.apply((d) => `https://${d}`);
 export const pagesUrl = pagesProject.subdomain.apply((s) => `https://${s}`);
+
+// Note: Custom domain binding is configured in the monorepo's Pulumi stack
+// to use the main todo-pwa project at app.todo.witty-m.com

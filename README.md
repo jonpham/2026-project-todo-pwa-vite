@@ -139,12 +139,14 @@ docker-compose up todo-api-nestjs
 
 ### Pull Request Workflow
 
-1. **Push feature branch** → GitHub Actions CI runs:
-   - Lint check
-   - Unit tests
-   - Build verification
-
-2. **Tests pass** → Create PR against `main`
+1. **Push feature branch** → GitHub Actions runs:
+   - **CI** (all branches): Lint, unit tests, build verification
+   - **Preview Deploy** (PRs & main): Build → Deploy to Cloudflare Pages preview → Run E2E tests
+   
+2. **Preview + E2E pass** → Safe to merge to `main`
+   - Preview URL appears in PR comments
+   - E2E test results visible in PR checks
+   - Test artifacts available for download
 
 3. **Merge to main** → Automated sync happens:
    - Repository dispatch sent to monorepo
@@ -153,6 +155,52 @@ docker-compose up todo-api-nestjs
    - E2E tests run against preview
    - Manual review of monorepo changes
    - Merge to monorepo main triggers production deploy
+
+## CI/CD Workflows
+
+### Continuous Integration (CI)
+
+**Triggers on**: Push to any branch, PR to main
+
+**Steps**:
+1. Install dependencies with pnpm
+2. Run ESLint (code quality)
+3. Run Vitest unit + component tests
+4. Build with Vite (catches TypeScript errors)
+
+**Result**: Must pass before merge to main
+
+**File**: `.github/workflows/ci.yml`
+
+### Continuous Deployment — Preview (CD Preview)
+
+**Triggers on**: Pull requests and push to main
+
+**Steps**:
+1. Build PWA with Vite
+2. Deploy to Cloudflare Pages (preview channel)
+3. Run Playwright E2E tests against preview URL
+4. Upload test artifacts and report results
+
+**Result**: 
+- Preview URL posted to PR
+- Test results visible in PR checks
+- Blocks merge if E2E tests fail (on PR)
+
+**File**: `.github/workflows/cd-preview.yml`
+
+### Continuous Deployment — Sync to Monorepo
+
+**Triggers on**: Successful CI + merge to main in this repo
+
+**Steps**:
+1. Repository dispatch event sent to monorepo
+2. Monorepo creates subtree sync PR
+3. Monorepo's preview workflow validates integration
+4. Manual review and merge to monorepo main
+5. Production deployment triggered
+
+**File**: `.github/workflows/trigger-monorepo-sync.yml` (this repo)
 
 ## Deployment Strategy
 

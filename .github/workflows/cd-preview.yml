@@ -3,11 +3,9 @@ name: CD — Preview
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-  push:
-    branches: [main]
 
 concurrency:
-  group: cd-preview-${{ github.event.pull_request.number || github.ref }}
+  group: cd-preview-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
